@@ -48,6 +48,9 @@ struct ImGui_ImplVulkan_Data
         memset((void*)this, 0, sizeof(*this));
         BufferMemoryAlignment = 256;
     }
+
+    
+
 };
 
 static ImGui_ImplVulkan_Data* ImGui_ImplVulkan_GetBackendData()
@@ -255,6 +258,14 @@ void VAugen::destroyFrameObjects()
   {
     vkFreeMemory(v->Device, bd->UploadBufferMemory, v->Allocator);
     bd->UploadBufferMemory = VK_NULL_HANDLE;
+  }
+}
+
+void VAugen::cleanupCameras()
+{
+  for (cv::VideoCapture cam : cameras)
+  {
+    cam.release();
   }
 }
 
