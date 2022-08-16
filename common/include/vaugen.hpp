@@ -27,6 +27,7 @@ class VAugen
     void initVAugen(VkDevice*, VkQueue*, std::vector<std::string>);
     void setupCamera(std::vector<std::string>);
     void captureFrame();
+    void cleanupCameras();
 
     bool createFrameTexture(VkCommandBuffer, cv::Mat);
     void destroyFrameObjects();

@@ -76,7 +76,7 @@ void VAugen::setupCamera(std::vector<std::string> cameraPath)
 
   for (auto path : cameraPath){
     this->cameraPaths.push_back(path);
-    cv::VideoCapture cam(path);
+    cv::VideoCapture cam(path, cv::CAP_GSTREAMER);
     this->cameras.push_back(cam);
     
   }
@@ -106,6 +106,14 @@ void VAugen::captureFrame()
   cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
 }
 
+void VAugen::cleanupCameras()
+{
+  for ( cv::VideoCapture cam : cameras)
+  {
+    cam.release();
+  }
+}
+
 bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
 {
   ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
@@ -115,7 +123,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
   pixels = frame.data;
   width = frame.cols;
   height = frame.rows;
-  size_t upload_size = width * height * 3 * sizeof(char);
+  size_t upload_size = width * height * 4;
 
   VkResult result;
 
@@ -123,7 +131,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
     VkImageCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     info.imageType = VK_IMAGE_TYPE_2D;
-    info.format = VK_FORMAT_R8G8B8_UNORM;
+    info.format = VK_FORMAT_R8G8B8A8_UNORM;
     info.extent.width = width;
     info.extent.height = height;
     info.extent.depth = 1;
@@ -154,7 +162,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     info.image = bd->FrameImage;
     info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    info.format = VK_FORMAT_R8G8B8_UNORM;
+    info.format = VK_FORMAT_R8G8B8A8_UNORM;
     info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     info.subresourceRange.levelCount = 1;
     info.subresourceRange.layerCount = 1;
@@ -293,8 +301,9 @@ void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue, std::ve
   {
     cv::VideoCapture cam;
     cameras.push_back(cam);
+    cameras[i].open(cameraPaths[i]);
   }
-  cameras[0].open(cameraPaths[0]);
+  
 }
 
 void VAugen::renderLoop(ImGui_ImplVulkanH_Window* wd)
