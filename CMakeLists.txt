@@ -5,17 +5,20 @@ project(esel LANGUAGES C CXX)
 
 find_package(glfw3 3.3 REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(OpenCV REQUIRED)
 
 set(COMMON_DIR ${CMAKE_SOURCE_DIR}/common)
 set(IMGUI_DIR ../external/imgui)
 
 
 include_directories(
+
   /usr/local/include/
   ${COMMON_DIR}/include
   ${IMGUI_DIR}
   ${IMGUI_DIR}/backends
   ${IMGUI_DIR}/misc
+  /usr/local/include/opencv4
 )
 
 file(GLOB_RECURSE SOURCE_FILES
@@ -66,5 +69,5 @@ add_library(imgui ${imgui_src} ${imgui_header})
 target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES} )
-set(LIBS common glfw imgui ${Vulkan_LIBRARIES} ${CMAKE_DL_LIBS})
+set(LIBS common glfw imgui ${OpenCV_LIBS} ${Vulkan_LIBRARIES} ${CMAKE_DL_LIBS})
 target_link_libraries(${PROJECT_NAME} ${LIBS})

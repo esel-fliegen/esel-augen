@@ -9,14 +9,13 @@ class VBase : public VImgui
   public:
     VBase();
 
-    std::string path = "/dev/video0";
+    std::vector<std::string> paths ;
     void run();
     void mainLoop();
     void initVulkan();    
     void cleanup();
 
-
-
+    VAugen augen;
 
   protected:
     

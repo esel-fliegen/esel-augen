@@ -1,13 +1,17 @@
 #include "vbase.hpp"
 
 VBase::VBase()
-{}
+{
+
+}
 
 void VBase::run()
 {
   initGLFWwindow();
   initVulkan();
   initImgui();
+  augen.cameraPaths.push_back("/dev/video0");
+  augen.initVAugen(&logicalDevice, &graphicsQueue, augen.cameraPaths);
   mainLoop();  
   cleanup();
 }
@@ -23,6 +27,7 @@ void VBase::initVulkan()
 
 }
 
+
 void VBase::mainLoop()
 {
   while (!glfwWindowShouldClose(glfwWindow))
@@ -30,8 +35,9 @@ void VBase::mainLoop()
     processInput(glfwWindow);
     glfwPollEvents();
     renderLoopBegin();
-    imguiDemo();
+    augen.renderLoop(&mainWindowData);
     renderLoopEnd(&mainWindowData);
+    augen.destroyFrameViewObjects();
   }
 }
 

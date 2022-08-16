@@ -93,6 +93,7 @@ void VAugen::setupCamera(std::vector<std::string> cameraPath)
 void VAugen::captureFrame()
 {
   cameras[0] >> frame1;
+  cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
 
 }
 
@@ -100,13 +101,12 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
 {
   ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
   ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
-
   unsigned char* pixels;
   int width, height;
   pixels = frame.data;
   width = frame.cols;
   height = frame.rows;
-  size_t upload_size = width * height * 4 * sizeof(char);
+  size_t upload_size = width * height * 3 * sizeof(char);
 
   VkResult result;
 
@@ -114,7 +114,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
     VkImageCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     info.imageType = VK_IMAGE_TYPE_2D;
-    info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    info.format = VK_FORMAT_R8G8B8_UNORM;
     info.extent.width = width;
     info.extent.height = height;
     info.extent.depth = 1;
@@ -145,7 +145,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     info.image = bd->FrameImage;
     info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    info.format = VK_FORMAT_R8G8B8_UNORM;
     info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     info.subresourceRange.levelCount = 1;
     info.subresourceRange.layerCount = 1;
@@ -229,6 +229,108 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
   }
 
   frameTexture = (ImTextureID)bd->FrameDescriptorSet;
+  
+  return true;
+}
+
+void VAugen::destroyFrameObjects()
+{
+  ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+  ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
+  if (bd->UploadBuffer)
+  {
+    vkDestroyBuffer(v->Device, bd->UploadBuffer, v->Allocator);
+    bd->UploadBuffer = VK_NULL_HANDLE;
+  }
+  if (bd->UploadBufferMemory)
+  {
+    vkFreeMemory(v->Device, bd->UploadBufferMemory, v->Allocator);
+    bd->UploadBufferMemory = VK_NULL_HANDLE;
+  }
+}
+
+void VAugen::destroyFrameViewObjects()
+{
+  ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+  ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
+
+  vkDeviceWaitIdle(v->Device);
+  // if(bd->FrameSampler)
+  // {
+  //   vkDestroySampler(v->Device, bd->FrameSampler, VK_NULL_HANDLE);
+  //   bd->FrameSampler = VK_NULL_HANDLE;
+  // }
+  if(bd->FrameView)
+  {
+    vkDestroyImageView(v->Device, bd->FrameView, VK_NULL_HANDLE);
+    bd->FrameView = VK_NULL_HANDLE;
+  }
+
+  if(bd->FrameImage)
+  {
+    vkDestroyImage(v->Device, bd->FrameImage, VK_NULL_HANDLE);
+    bd->FrameImage = VK_NULL_HANDLE;
+  }
+  if(bd->FrameMemory)
+  {
+    vkFreeMemory(v->Device, bd->FrameMemory, VK_NULL_HANDLE);
+    bd->FrameMemory = VK_NULL_HANDLE;
+  }
+
+}
+
+void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue, std::vector<std::string> paths)
+{
+  this->cameraPaths = paths;
+  this->logicalDevice = logicalDevice;
+  this->graphicsQueue = graphicsQueue;
+  for ( int i = 0; i < paths.size(); i++)
+  {
+    cv::VideoCapture cam;
+    cameras.push_back(cam);
+  }
+  cameras[0].open(cameraPaths[0]);
+}
+
+void VAugen::renderLoop(ImGui_ImplVulkanH_Window* wd)
+{
+  captureFrame();
+  {
+  VkCommandPool command_pool = wd->Frames[wd->FrameIndex].CommandPool;
+  VkCommandBuffer command_buffer = wd->Frames[wd->FrameIndex].CommandBuffer;
+
+  VkResult result = vkResult(vkResetCommandPool(*logicalDevice, command_pool, 0),
+      "reset command pool");
+    
+  VkCommandBufferBeginInfo begin_info = {};
+  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+  result = vkResult(vkBeginCommandBuffer(command_buffer, &begin_info),
+    "begin command buffer");
+
+  createFrameTexture(command_buffer, frame1);
+
+  VkSubmitInfo end_info = {};
+  end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  end_info.commandBufferCount = 1;
+  end_info.pCommandBuffers = &command_buffer;
+  result = vkResult(vkEndCommandBuffer(command_buffer), 
+    "end command buffer");
+  result = vkResult(vkQueueSubmit(*graphicsQueue, 1, &end_info, VK_NULL_HANDLE),
+    "queue submit");
+
+  result = vkResult(vkDeviceWaitIdle(*logicalDevice),
+    "device wait idle");
+  destroyFrameObjects();
+  }
+  if(showCamera)
+  {
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::Begin("HeeHaw!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Image(frameTexture, ImVec2(512,512));
+    ImGui::End();
+  }
+  
 }
 
 VkResult VAugen::vkResult(VkResult result, std::string msg)
