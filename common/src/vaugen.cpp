@@ -92,9 +92,18 @@ void VAugen::setupCamera(std::vector<std::string> cameraPath)
 
 void VAugen::captureFrame()
 {
-  cameras[0] >> frame1;
+  if(!frame1.empty())
+  {
+    frame1.release();
+  }
+  for (int i = 0; i < cameras.size(); i++){
+    cv::Mat frame;    
+    cameras[i] >> frame;
+    frame1.push_back(frame);
+    
+  }
+  
   cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
-
 }
 
 bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
@@ -102,7 +111,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
   ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
   ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
   unsigned char* pixels;
-  int width, height;
+  
   pixels = frame.data;
   width = frame.cols;
   height = frame.rows;
@@ -255,11 +264,7 @@ void VAugen::destroyFrameViewObjects()
   ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
 
   vkDeviceWaitIdle(v->Device);
-  // if(bd->FrameSampler)
-  // {
-  //   vkDestroySampler(v->Device, bd->FrameSampler, VK_NULL_HANDLE);
-  //   bd->FrameSampler = VK_NULL_HANDLE;
-  // }
+
   if(bd->FrameView)
   {
     vkDestroyImageView(v->Device, bd->FrameView, VK_NULL_HANDLE);
@@ -329,7 +334,7 @@ void VAugen::renderLoop(ImGui_ImplVulkanH_Window* wd)
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::Begin("HeeHaw!");
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::Image(frameTexture, ImVec2(512,512));
+    ImGui::Image(frameTexture, ImVec2(width, height));
     ImGui::End();
   }
   

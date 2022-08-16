@@ -22,6 +22,7 @@ class VAugen
     cv::Mat frame1;
     ImTextureID frameTexture;
     bool showCamera = true;
+    int width, height;
     
     void initVAugen(VkDevice*, VkQueue*, std::vector<std::string>);
     void setupCamera(std::vector<std::string>);
