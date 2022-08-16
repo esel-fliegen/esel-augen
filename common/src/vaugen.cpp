@@ -75,7 +75,6 @@ void VAugen::setupCamera(std::vector<std::string> cameraPath)
   
 
   for (auto path : cameraPath){
-    this->cameraPaths.push_back(path);
     cv::VideoCapture cam(path, cv::CAP_GSTREAMER);
     this->cameras.push_back(cam);
     
@@ -103,7 +102,7 @@ void VAugen::captureFrame()
     
   }
   
-  cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
+  //cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
 }
 
 void VAugen::cleanupCameras()
@@ -292,16 +291,19 @@ void VAugen::destroyFrameViewObjects()
 
 }
 
-void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue, std::vector<std::string> paths)
+void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue)
 {
-  this->cameraPaths = paths;
+
   this->logicalDevice = logicalDevice;
   this->graphicsQueue = graphicsQueue;
-  for ( int i = 0; i < paths.size(); i++)
+  for ( int i = 0; i < cameraPaths.size(); i++)
   {
-    cv::VideoCapture cam;
+    cv::VideoCapture cam(cameraPaths[i], cv::CAP_GSTREAMER);
+    if(!cam.isOpened())
+    {
+      std::cout<<"failed to open camera: "<<i<<std::endl;
+    }
     cameras.push_back(cam);
-    cameras[i].open(cameraPaths[i]);
   }
   
 }
