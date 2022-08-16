@@ -24,10 +24,11 @@ class VAugen
     bool showCamera = true;
     int width, height;
     
-    void initVAugen(VkDevice*, VkQueue*, std::vector<std::string>);
+    void initVAugen(VkDevice*, VkQueue*);
     void setupCamera(std::vector<std::string>);
     void captureFrame();
     void cleanupCameras();
+
     bool createFrameTexture(VkCommandBuffer, cv::Mat);
     void destroyFrameObjects();
     void destroyFrameViewObjects();
