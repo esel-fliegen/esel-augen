@@ -325,8 +325,10 @@ void VAugen::renderLoop(ImGui_ImplVulkanH_Window* wd)
   }
   if(showCamera)
   {
+
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::Begin("HeeHaw!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Begin("HeeHaw!");
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::Image(frameTexture, ImVec2(512,512));
     ImGui::End();
   }

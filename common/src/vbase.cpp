@@ -43,7 +43,9 @@ void VBase::mainLoop()
 
 void VBase::cleanup()
 {
+  
   cleanImgui();
+  
   vkDestroyDevice(logicalDevice, VK_NULL_HANDLE);
   if(enableValidationLayers)
   {

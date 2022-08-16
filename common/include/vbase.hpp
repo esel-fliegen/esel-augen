@@ -2,6 +2,7 @@
 
 #include "vimgui.hpp"
 #include "vaugen.hpp"
+#include <memory>
 
 
 class VBase : public VImgui
@@ -15,6 +16,7 @@ class VBase : public VImgui
     void initVulkan();    
     void cleanup();
 
+ 
     VAugen augen;
 
   protected:
