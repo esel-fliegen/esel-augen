@@ -73,25 +73,22 @@ static uint32_t ImGui_ImplVulkan_MemoryType(VkMemoryPropertyFlags properties, ui
 VAugen::VAugen()
 {}
 
-void VAugen::setupCamera(std::vector<std::string> cameraPath)
+void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue)
 {
-  
 
-  for (auto path : cameraPath){
-    cv::VideoCapture cam(path, cv::CAP_GSTREAMER);
-    this->cameras.push_back(cam);
-    
-  }
-  
-
-  for ( int i = 0; i < cameras.size(); i++){
-    if(!cameras[i].isOpened()){
-      std::cout<<"Failed to open "<<cameraPath[i]<<std::endl;
+  this->logicalDevice = logicalDevice;
+  this->graphicsQueue = graphicsQueue;
+  for ( int i = 0; i < cameraPaths.size(); i++)
+  {
+    cv::VideoCapture cam(cameraPaths[i], cv::CAP_GSTREAMER);
+    if(!cam.isOpened())
+    {
+      std::cout<<"failed to open camera: "<<i<<std::endl;
     }
+    cameras.push_back(cam);
   }
-
+  
 }
-
 void VAugen::captureFrame()
 {
   if(!frame1.empty())
@@ -302,22 +299,7 @@ void VAugen::destroyFrameViewObjects()
 
 }
 
-void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue)
-{
 
-  this->logicalDevice = logicalDevice;
-  this->graphicsQueue = graphicsQueue;
-  for ( int i = 0; i < cameraPaths.size(); i++)
-  {
-    cv::VideoCapture cam(cameraPaths[i], cv::CAP_GSTREAMER);
-    if(!cam.isOpened())
-    {
-      std::cout<<"failed to open camera: "<<i<<std::endl;
-    }
-    cameras.push_back(cam);
-  }
-  
-}
 
 void VAugen::renderLoop(ImGui_ImplVulkanH_Window* wd)
 {

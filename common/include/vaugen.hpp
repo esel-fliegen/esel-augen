@@ -25,7 +25,6 @@ class VAugen
     int width, height;
     
     void initVAugen(VkDevice*, VkQueue*);
-    void setupCamera(std::vector<std::string>);
     void captureFrame();
     void cleanupCameras();
 
