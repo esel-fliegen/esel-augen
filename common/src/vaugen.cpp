@@ -116,7 +116,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
   pixels = frame.data;
   width = frame.cols;
   height = frame.rows;
-  size_t upload_size = width * height * 4;
+  size_t upload_size = width * height * 4 * sizeof(char);
 
   VkResult result;
 
