@@ -18,7 +18,9 @@ class VAugen
     VkQueue* graphicsQueue;
 
     std::vector<cv::VideoCapture> cameras;
+    cv::VideoCapture camera;
     std::vector<std::string> cameraPaths;
+    std::string cameraPath;
     cv::Mat frame1;
     ImTextureID frameTexture;
     bool showCamera = true;

@@ -78,7 +78,7 @@ void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue)
 
   this->logicalDevice = logicalDevice;
   this->graphicsQueue = graphicsQueue;
-  for ( int i = 0; i < cameraPaths.size(); i++)
+/*   for ( int i = 0; i < cameraPaths.size(); i++)
   {
     cv::VideoCapture cam(cameraPaths[i], cv::CAP_GSTREAMER);
     if(!cam.isOpened())
@@ -86,21 +86,22 @@ void VAugen::initVAugen(VkDevice* logicalDevice, VkQueue* graphicsQueue)
       std::cout<<"failed to open camera: "<<i<<std::endl;
     }
     cameras.push_back(cam);
-  }
+  } */
   
 }
 void VAugen::captureFrame()
 {
-  if(!frame1.empty())
-  {
-    frame1.release();
-  }
-  for (int i = 0; i < cameras.size(); i++){
-    cv::Mat frame;    
-    cameras[i] >> frame;
-    frame1.push_back(frame);
+  camera >> frame1;
+  // if(!frame1.empty())
+  // {
+  //   frame1.release();
+  // }
+  // for (int i = 0; i < cameras.size(); i++){
+  //   cv::Mat frame;    
+  //   cameras[i] >> frame;
+  //   frame1.push_back(frame);
     
-  }
+  // }
   
   //cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
 }
