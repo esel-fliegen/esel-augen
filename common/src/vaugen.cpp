@@ -106,13 +106,6 @@ void VAugen::captureFrame()
   //cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
 }
 
-void VAugen::cleanupCameras()
-{
-  for ( cv::VideoCapture cam : cameras)
-  {
-    cam.release();
-  }
-}
 
 bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
 {
