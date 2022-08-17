@@ -103,7 +103,7 @@ void VAugen::captureFrame()
     
   // }
   
-  //cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
+  cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
 }
 
 
@@ -116,7 +116,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
   pixels = frame.data;
   width = frame.cols;
   height = frame.rows;
-  size_t upload_size = width * height * 3 * sizeof(char);
+  size_t upload_size = width * height * frame.elemSize();
 
   VkResult result;
 
