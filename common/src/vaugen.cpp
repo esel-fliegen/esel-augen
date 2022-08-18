@@ -102,8 +102,9 @@ void VAugen::captureFrame()
   //   frame1.push_back(frame);
     
   // }
+  //frame1.convertTo(frame1, CV_8UC3);
+  cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGBA);
   
-  cv::cvtColor(frame1, frame1, cv::COLOR_BGR2RGB);
 }
 
 
@@ -116,7 +117,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
   pixels = frame.data;
   width = frame.cols;
   height = frame.rows;
-  size_t upload_size = width * height * frame.elemSize();
+  size_t upload_size = width * height * 4;
 
   VkResult result;
 
@@ -124,12 +125,12 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
     VkImageCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     info.imageType = VK_IMAGE_TYPE_2D;
-    info.format = VK_FORMAT_R8G8B8_UNORM;
+    info.format = VK_FORMAT_R8G8B8A8_UNORM;
     info.extent.width = width;
     info.extent.height = height;
     info.extent.depth = 1;
     info.mipLevels = 1;
-    info.arrayLayers = 1;
+    info.arrayLayers = 2;
     info.samples = VK_SAMPLE_COUNT_1_BIT;
     info.tiling = VK_IMAGE_TILING_OPTIMAL;
     info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -155,7 +156,7 @@ bool VAugen::createFrameTexture(VkCommandBuffer command_buffer, cv::Mat frame)
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     info.image = bd->FrameImage;
     info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    info.format = VK_FORMAT_R8G8B8_UNORM;
+    info.format = VK_FORMAT_R8G8B8A8_UNORM;
     info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     info.subresourceRange.levelCount = 1;
     info.subresourceRange.layerCount = 1;
